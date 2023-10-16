@@ -3,9 +3,11 @@ const app = express();
 const bodyParser = require("body-parser")
 const jwt = require("jsonwebtoken")
 const fs = require("fs")
+const cors = require("cors")
 
 app.use(express.json());
 app.use(bodyParser.json())
+app.use(cors())
 
 const adminSecret = "ADMINSecret"
 const userSecret = "USERSecret"
@@ -19,7 +21,7 @@ function generateJWT(payload, secret) {
 }
 
 function authenticateAdmin(req, res, next) {
-  const token = req.headers.authorization.split(" ")[1]
+  const token = req.headers.authorization?.split(" ")[1]
   jwt.verify(token, adminSecret, (err, originalData) => {
     if (err) {
       res.status(403).json({data: "not authenticated"})
@@ -149,7 +151,7 @@ app.put('/admin/courses/:courseId', authenticateAdmin, (req, res) => {
   })
 });
 
-app.get('/admin/courses', (req, res) => {
+app.get('/admin/courses', authenticateAdmin, (req, res) => {
   fs.readFile("./files/courses.json", "utf-8", (err, data) => {
     if (err) {
       res.status(500).json({data: "internal server error"})
@@ -158,6 +160,17 @@ app.get('/admin/courses', (req, res) => {
     }
   })
 });
+
+app.get('/admin/courses/:id', authenticateAdmin, (req, res) => {
+  fs.readFile("./files/courses.json", "utf-8", (err, data) => {
+    if (err) {
+      res.status(500).json({data: "internal server error"})
+    } else {
+      res.json(JSON.parse(data)[req.params.id])
+    }
+  })
+});
+
 
 // User routes
 app.post('/users/signup', (req, res) => {
