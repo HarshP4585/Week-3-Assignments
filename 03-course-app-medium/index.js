@@ -238,15 +238,19 @@ app.post('/users/courses/:courseId', authenticateUser, (req, res) => {
             res.status(500).json({data: "internal server error"})
           } else {
             let users = JSON.parse(data)
-            users[req.user.username].purchasedCourses.push(req.params.courseId)
-
-            fs.writeFile("./files/users.json", JSON.stringify(users), (err) => {
-              if (err) {
-                res.status(500).json({data: "internal server error"})
-              } else {
-                res.json({data: "course purchased successfully"})
-              }
-            })
+            if (users[req.user.username].purchasedCourses.includes(req.params.courseId)) {
+              res.status(400).json({data: "course already purchased"})
+            } else {
+              users[req.user.username].purchasedCourses.push(req.params.courseId)
+  
+              fs.writeFile("./files/users.json", JSON.stringify(users), (err) => {
+                if (err) {
+                  res.status(500).json({data: "internal server error"})
+                } else {
+                  res.json({data: "course purchased successfully"})
+                }
+              })
+            }
           }
         })
       } else {
