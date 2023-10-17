@@ -58,7 +58,7 @@ function authenticateUser(req, res, next) {
           }
         })
       } else {
-        res.json(400).json({data: "token expired"})
+        res.status(400).json({data: "token expired"})
       }
     }
   })
@@ -266,9 +266,11 @@ app.get('/users/purchasedCourses', authenticateUser, (req, res) => {
       res.status(500).json({data: "internal server error"})
     } else {
       const courses = JSON.parse(data)
-      let purchasedCourses = []
+      // let purchasedCourses = []
+      let purchasedCourses = {}
       for (const c of req.user.purchasedCourses) {
-        purchasedCourses.push(courses[c])
+        // purchasedCourses.push({id: c, ...courses[c]})
+        purchasedCourses[c] = courses[c]
       }
       res.json(purchasedCourses)
     }
